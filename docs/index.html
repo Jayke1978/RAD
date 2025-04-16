@@ -3,52 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alternating Display</title>
+  <title>Live Afbeelding</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    iframe, img {
-      width: 100vw;
-      height: 100vh;
-      border: none;
-      display: none;
+    img {
+      max-width: 100%;
+      max-height: 100%;
     }
   </style>
 </head>
 <body>
-  <img id="liveImage" alt="Live image" />
-  <iframe id="livePage" src=""></iframe>
+  <img id="liveImage" alt="Live afbeelding" />
 
   <script>
-    const img = document.getElementById("liveImage");
-    const iframe = document.getElementById("livePage");
+    const img = document.getElementById('liveImage');
 
-    function showImage() {
+    function updateImage() {
       const timestamp = new Date().getTime();
       img.src = `https://raw.githubusercontent.com/Jayke1978/RAD/main/1.png?v=${timestamp}`;
-      img.style.display = "block";
-      iframe.style.display = "none";
     }
 
-    function showPage() {
-      iframe.src = "https://timenterprise.radiuspaymentsolutions.com/display/?suiv7469";
-      iframe.style.display = "block";
-      img.style.display = "none";
-    }
-
-    function alternateContent() {
-      showImage();
-      setTimeout(() => {
-        showPage();
-      }, 30000); // after 30s show iframe
-    }
-
-    alternateContent();
-    setInterval(alternateContent, 60000); // full loop every 60s
+    updateImage(); // eerste keer tonen
+    setInterval(updateImage, 30000); // elke 30 sec vernieuwen
   </script>
 </body>
 </html>
