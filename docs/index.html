@@ -41,9 +41,10 @@
     }
 
     #bannerText {
-      position: absolute;
-      animation: scrollText 15s linear infinite;
-    }
+  position: absolute;
+  animation: scrollText 15s linear infinite;
+  white-space: pre; /* <-- belangrijk! behoud spaties en tabs */
+}
 
     @keyframes scrollText {
       0% {
