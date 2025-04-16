@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Afbeelding</title>
+  <title>Rotating Live Images (.png & .jpg)</title>
   <style>
     html, body {
       margin: 0;
@@ -17,6 +17,7 @@
     img {
       max-width: 100%;
       max-height: 100%;
+      display: none;
     }
   </style>
 </head>
@@ -24,15 +25,63 @@
   <img id="liveImage" alt="Live afbeelding" />
 
   <script>
-    const img = document.getElementById('liveImage');
+    const img = document.getElementById("liveImage");
+    const baseUrl = "https://raw.githubusercontent.com/Jayke1978/RAD/main/";
+    const imageCount = 10; // check 1.jpg/.png t/m 10.jpg/.png
+    const intervalMs = 30000;
 
-    function updateImage() {
-      const timestamp = new Date().getTime();
-      img.src = `https://raw.githubusercontent.com/Jayke1978/RAD/main/1.png?v=${timestamp}`;
+    let availableImages = [];
+    let currentIndex = 0;
+
+    // Check of bestand bestaat
+    function checkImageExists(url) {
+      return new Promise((resolve) => {
+        const testImg = new Image();
+        testImg.onload = () => resolve(url);
+        testImg.onerror = () => resolve(null);
+        testImg.src = url + "?check=" + new Date().getTime();
+      });
     }
 
-    updateImage(); // eerste keer tonen
-    setInterval(updateImage, 30000); // elke 30 sec vernieuwen
+    // Zoek naar .png of .jpg
+    async function loadAvailableImages() {
+      for (let i = 1; i <= imageCount; i++) {
+        const pngUrl = `${baseUrl}${i}.png`;
+        const jpgUrl = `${baseUrl}${i}.jpg`;
+
+        const pngExists = await checkImageExists(pngUrl);
+        if (pngExists) {
+          availableImages.push(pngExists);
+          continue;
+        }
+
+        const jpgExists = await checkImageExists(jpgUrl);
+        if (jpgExists) {
+          availableImages.push(jpgExists);
+        }
+      }
+
+      if (availableImages.length === 0) {
+        console.warn("Geen afbeeldingen gevonden.");
+        return;
+      }
+
+      updateImage();
+      setInterval(updateImage, intervalMs);
+    }
+
+    function updateImage() {
+      if (availableImages.length === 0) return;
+
+      const timestamp = new Date().getTime();
+      const url = `${availableImages[currentIndex]}?v=${timestamp}`;
+      img.src = url;
+      img.style.display = "block";
+
+      currentIndex = (currentIndex + 1) % availableImages.length;
+    }
+
+    loadAvailableImages();
   </script>
 </body>
 </html>
