@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rotating Live Images (.png & .jpg)</title>
+  <title>Rotating Live Images</title>
   <style>
     html, body {
       margin: 0;
@@ -27,13 +27,12 @@
   <script>
     const img = document.getElementById("liveImage");
     const baseUrl = "https://raw.githubusercontent.com/Jayke1978/RAD/main/";
-    const imageCount = 10; // check 1.jpg/.png t/m 10.jpg/.png
+    const imageCount = 10;
     const intervalMs = 30000;
 
     let availableImages = [];
     let currentIndex = 0;
 
-    // Check of bestand bestaat
     function checkImageExists(url) {
       return new Promise((resolve) => {
         const testImg = new Image();
@@ -43,7 +42,6 @@
       });
     }
 
-    // Zoek naar .png of .jpg
     async function loadAvailableImages() {
       for (let i = 1; i <= imageCount; i++) {
         const pngUrl = `${baseUrl}${i}.png`;
@@ -81,7 +79,25 @@
       currentIndex = (currentIndex + 1) % availableImages.length;
     }
 
+    function scheduleDailyReload(hour, minute = 0) {
+      const now = new Date();
+      const next = new Date();
+
+      next.setHours(hour, minute, 0, 0);
+      if (next <= now) {
+        next.setDate(next.getDate() + 1);
+      }
+
+      const delay = next.getTime() - now.getTime();
+      console.log(`Volgende automatische herlaad om: ${next.toLocaleString()}`);
+      setTimeout(() => {
+        location.reload();
+      }, delay);
+    }
+
+    // Start
     loadAvailableImages();
+    scheduleDailyReload(5); // Herlaad elke dag om 05:00
   </script>
 </body>
 </html>
