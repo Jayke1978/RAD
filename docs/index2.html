@@ -41,10 +41,10 @@
     }
 
     #bannerText {
-  position: absolute;
-  animation: scrollText 15s linear infinite;
-  white-space: pre; /* <-- belangrijk! behoud spaties en tabs */
-}
+      position: absolute;
+      animation: scrollText 15s linear infinite;
+      white-space: pre;
+    }
 
     @keyframes scrollText {
       0% {
@@ -67,7 +67,6 @@
 
   <script>
     const baseUrl = "https://raw.githubusercontent.com/Jayke1978/RAD/main/";
-    const imageCount = 10;
     const imageInterval = 30000; // 30 seconden
     const bannerRefreshInterval = 15 * 60 * 1000; // 15 minuten
     const reloadHour = 5; // Dagelijkse herlaad om 5u
@@ -89,9 +88,12 @@
     }
 
     async function loadAvailableImages() {
-      for (let i = 1; i <= imageCount; i++) {
-        const pngUrl = `${baseUrl}${i}.png`;
-        const jpgUrl = `${baseUrl}${i}.jpg`;
+      const letters = 'abcdefghij';
+
+      for (let i = 0; i < letters.length; i++) {
+        const letter = letters[i];
+        const pngUrl = `${baseUrl}${letter}.png`;
+        const jpgUrl = `${baseUrl}${letter}.jpg`;
 
         const pngExists = await checkImageExists(pngUrl);
         if (pngExists) {
@@ -158,7 +160,7 @@
 
     // Start
     loadAvailableImages();
-    loadBannerText(bananen);
+    loadBannerText();
     setInterval(loadBannerText, bannerRefreshInterval); // Refresh bannertekst elke 15 min
     scheduleDailyReload(reloadHour); // Herlaad pagina dagelijks om 5u
   </script>
