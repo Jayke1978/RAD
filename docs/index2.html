@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Info met Banner</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      font-family: sans-serif;
+    }
+
+    #content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      display: none;
+    }
+
+    #banner {
+      height: 50px;
+      background: #111;
+      color: #fff;
+      font-size: 1.2em;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+      white-space: nowrap;
+    }
+
+    #bannerText {
+  position: absolute;
+  animation: scrollText 15s linear infinite;
+  white-space: pre; /* <-- belangrijk! behoud spaties en tabs */
+}
+
+    @keyframes scrollText {
+      0% {
+        left: 100%;
+      }
+      100% {
+        left: -100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <img id="liveImage" alt="Live afbeelding" />
+  </div>
+
+  <div id="banner">
+    <div id="bannerText">Loading banner text...</div>
+  </div>
+
+  <script>
+    const baseUrl = "https://raw.githubusercontent.com/Jayke1978/RAD/main/";
+    const imageCount = 10;
+    const imageInterval = 30000; // 30 seconden
+    const bannerRefreshInterval = 15 * 60 * 1000; // 15 minuten
+    const reloadHour = 5; // Dagelijkse herlaad om 5u
+
+    const img = document.getElementById("liveImage");
+    const banner = document.getElementById("banner");
+    const bannerText = document.getElementById("bannerText");
+
+    let availableImages = [];
+    let currentIndex = 0;
+
+    function checkImageExists(url) {
+      return new Promise((resolve) => {
+        const testImg = new Image();
+        testImg.onload = () => resolve(url);
+        testImg.onerror = () => resolve(null);
+        testImg.src = url + "?check=" + new Date().getTime();
+      });
+    }
+
+    async function loadAvailableImages() {
+      for (let i = 1; i <= imageCount; i++) {
+        const pngUrl = `${baseUrl}${i}.png`;
+        const jpgUrl = `${baseUrl}${i}.jpg`;
+
+        const pngExists = await checkImageExists(pngUrl);
+        if (pngExists) {
+          availableImages.push(pngExists);
+          continue;
+        }
+
+        const jpgExists = await checkImageExists(jpgUrl);
+        if (jpgExists) {
+          availableImages.push(jpgExists);
+        }
+      }
+
+      if (availableImages.length === 0) {
+        console.warn("Geen afbeeldingen gevonden.");
+        return;
+      }
+
+      updateImage();
+      setInterval(updateImage, imageInterval);
+    }
+
+    function updateImage() {
+      if (availableImages.length === 0) return;
+
+      const timestamp = new Date().getTime();
+      const url = `${availableImages[currentIndex]}?v=${timestamp}`;
+      img.src = url;
+      img.style.display = "block";
+
+      currentIndex = (currentIndex + 1) % availableImages.length;
+    }
+
+    function scheduleDailyReload(hour, minute = 0) {
+      const now = new Date();
+      const next = new Date();
+      next.setHours(hour, minute, 0, 0);
+      if (next <= now) {
+        next.setDate(next.getDate() + 1);
+      }
+      const delay = next.getTime() - now.getTime();
+      setTimeout(() => location.reload(), delay);
+    }
+
+    async function loadBannerText() {
+      const url = `${baseUrl}tekst.txt?v=${new Date().getTime()}`;
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          const text = (await response.text()).trim();
+          if (text.length > 0) {
+            bannerText.textContent = text;
+            banner.style.display = "flex";
+          } else {
+            banner.style.display = "none";
+          }
+        } else {
+          banner.style.display = "none";
+        }
+      } catch {
+        banner.style.display = "none";
+      }
+    }
+
+    // Start
+    loadAvailableImages();
+    loadBannerText();
+    setInterval(loadBannerText, bannerRefreshInterval); // Refresh bannertekst elke 15 min
+    scheduleDailyReload(reloadHour); // Herlaad pagina dagelijks om 5u
+  </script>
+</body>
+</html>
